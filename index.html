@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Procedural Scenes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <canvas id="scene" aria-hidden="true"></canvas>
+
+    <p class="hint" id="hint" aria-live="polite">
+      <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="2" width="3" height="3" /><rect x="6" y="5" width="2" height="2" /><rect x="3" y="7" width="2" height="2" /></svg>
+      <span></span>
+    </p>
+
+    <main class="stage" id="stage"></main>
+
+    <nav class="controls" aria-label="Scene, interface and rendering">
+      <div class="picker" role="group" aria-label="Scene">
+        <button type="button" class="step" id="prev-scene" aria-label="Previous scene" title="Previous scene (←)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 3.5 5 7l3.5 3.5" /></svg>
+        </button>
+        <label class="sr-only" for="scene-pick">Scene</label>
+        <select id="scene-pick"></select>
+        <button type="button" class="step" id="next-scene" aria-label="Next scene" title="Next scene (→)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3.5 9 7l-3.5 3.5" /></svg>
+        </button>
+      </div>
+      <div class="picker" role="group" aria-label="Interface">
+        <button type="button" class="step" id="prev-ui" aria-label="Previous interface" title="Previous interface (↑)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 3.5 5 7l3.5 3.5" /></svg>
+        </button>
+        <label class="sr-only" for="ui-pick">Interface</label>
+        <select id="ui-pick"></select>
+        <button type="button" class="step" id="next-ui" aria-label="Next interface" title="Next interface (↓)">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3.5 9 7l-3.5 3.5" /></svg>
+        </button>
+      </div>
+      <div class="seg" role="group" aria-label="Render style">
+        <button type="button" data-mode="tiles" aria-pressed="true" title="Tiles (1)">tiles</button>
+        <button type="button" data-mode="ascii" aria-pressed="false" title="ASCII (2)">ascii</button>
+        <button type="button" data-mode="halftone" aria-pressed="false" title="Halftone (3)">halftone</button>
+      </div>
+      <button type="button" class="icon-btn framed" id="theme" aria-label="Dark mode" aria-pressed="false">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="M8 2.5a5.5 5.5 0 0 1 0 11z" fill="currentColor" /></svg>
+      </button>
+      <button type="button" class="icon-btn framed" id="hide-ui" aria-label="Hide interface" aria-pressed="false" title="Hide interface (H)">
+        <svg class="eye-open" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8Z" /><circle cx="8" cy="8" r="2" /></svg>
+        <svg class="eye-shut" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8Z" /><circle cx="8" cy="8" r="2" /><path d="m2.5 2.5 11 11" /></svg>
+      </button>
+    </nav>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
