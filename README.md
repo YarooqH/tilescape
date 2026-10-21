@@ -1,10 +1,10 @@
-# Procedural scenes
+# Tilescape
 
 Generative scenes drawn live on a canvas, rendered as tiles, ASCII or halftone. No dependencies besides Vite and TypeScript.
 
-**[Live demo](https://yarooqh.github.io/procedural-scenes/)**
+**[Live demo](https://yarooqh.github.io/tilescape/)**
 
-[![Koi pond rendered as tiles](docs/preview.png)](https://yarooqh.github.io/procedural-scenes/)
+[![Koi pond rendered as tiles](docs/preview.png)](https://yarooqh.github.io/tilescape/)
 
 ## Scenes
 
