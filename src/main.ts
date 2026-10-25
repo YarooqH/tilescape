@@ -512,7 +512,12 @@ function setTint(next: Tint) {
 function openTints(open: boolean) {
   tintPop.hidden = !open;
   tintButton.setAttribute('aria-expanded', String(open));
-  if (open) tintOptions[TINTS.indexOf(tint)].focus();
+  if (!open) return;
+  tintPop.style.setProperty('--nudge', '0px');
+  const r = tintPop.getBoundingClientRect();
+  const nudge = Math.max(0, 12 - r.left) - Math.max(0, r.right - (innerWidth - 12));
+  tintPop.style.setProperty('--nudge', `${nudge}px`);
+  tintOptions[TINTS.indexOf(tint)].focus();
 }
 tintButton.addEventListener('click', () => openTints(tintPop.hidden));
 tintPop.addEventListener('keydown', (e) => {
