@@ -17,6 +17,18 @@ const PERSONAS: Record<string, Persona> = {
     hello: 'The water is still. Say something and watch it move.',
     replies: ['A ring of ripples spreads out from where you spoke.', 'The koi turned toward the sound, all at once.', 'The water settles. It heard you.'],
   },
+  'falling-sand': {
+    name: 'the sand',
+    status: 'always running out',
+    hello: 'Every key drops a few grains. Send a word and it will hold its shape, briefly.',
+    replies: ['It held your words for a moment, then let them fall.', 'Sand remembers nothing. That was nice while it lasted.', 'The letters slumped into a dune.'],
+  },
+  topographic: {
+    name: 'the survey',
+    status: 'mapping the ground',
+    hello: 'Say something and the ground will rise to meet it.',
+    replies: ['Your words are a ridge now. Look at the lines bunch up.', 'The land lifted into letters, then wore back down.', 'New high ground, marked and measured.'],
+  },
   dragon: {
     name: 'the dragon',
     status: 'warm, mostly asleep',

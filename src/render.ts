@@ -35,11 +35,16 @@ export class Renderer {
     this.ctx = ctx;
   }
 
-  setTheme(paper: RGB, ink: RGB, core: RGB) {
+  /** `ramp` tints the marks from its first colour (faint) to its second (dense) instead of plain ink. */
+  setTheme(paper: RGB, ink: RGB, core: RGB, ramp?: [RGB, RGB]) {
     this.paper = paper;
-    this.ink = ink;
     this.core = core;
-    this.palette = Array.from({ length: LEVELS }, (_, i) => rgba(mix(paper, ink, 0.05 + 0.95 * (i / MAX_LEVEL))));
+    // the backdrop's grid lines take the middle of the ramp
+    this.ink = ramp ? mix(ramp[0], ramp[1], 0.5) : ink;
+    this.palette = Array.from({ length: LEVELS }, (_, i) => {
+      const t = i / MAX_LEVEL;
+      return rgba(mix(paper, ramp ? mix(ramp[0], ramp[1], t) : ink, 0.05 + 0.95 * t));
+    });
   }
 
   /** Scene backdrop (grid paper by default) plus the soft light behind the prompt, cached until resize, theme change or the scene asks. */

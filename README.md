@@ -8,7 +8,9 @@ Generative scenes drawn live on a canvas, rendered as tiles, ASCII or halftone. 
 
 ## Scenes
 
-Koi pond, dragon, black hole, planets, deep space, smoke & fire, murmuration and vines. Click in any scene to interact with it: scatter food, toss a pearl, drop a star into the black hole, send a hawk through the flock.
+Falling sand, topographic map, dragon, black hole, planets, deep space, smoke & fire, murmuration and vines. Click in any scene to interact with it: pour sand, raise a hill, toss a pearl, drop a star into the black hole, send a hawk through the flock.
+
+Every scene can be drawn in one of six ink colours: graphite, ember, ocean, moss, iris or coral.
 
 ## Interfaces
 
@@ -21,6 +23,7 @@ The scene sits behind a swappable interface: command palette, terminal, chat, wa
 | `←` `→` | Previous / next scene |
 | `↑` `↓` | Previous / next interface |
 | `1` `2` `3` | Tiles, ASCII, halftone |
+| `C` / `Shift C` | Next / previous ink colour |
 | `H` | Hide the interface |
 | `Ctrl K` | Jump to a scene (palette interface) |
 

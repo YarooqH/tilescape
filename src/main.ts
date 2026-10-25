@@ -1,4 +1,5 @@
 import './style.css';
+import { TINTS, type Tint } from './colors';
 import { TAU, clamp, rand, range, smoothstep } from './math';
 import { particles, spawn, stepParticles } from './particles';
 import { Renderer, type Mode, type RGB } from './render';
@@ -24,6 +25,9 @@ const prevUi = document.querySelector<HTMLButtonElement>('#prev-ui')!;
 const nextUi = document.querySelector<HTMLButtonElement>('#next-ui')!;
 const controls = document.querySelector<HTMLElement>('.controls')!;
 const hideButton = document.querySelector<HTMLButtonElement>('#hide-ui')!;
+const tintButton = document.querySelector<HTMLButtonElement>('#tint')!;
+const tintPop = document.querySelector<HTMLElement>('#tint-pop')!;
+const tintName = document.querySelector<HTMLElement>('#tint-name')!;
 
 const root = document.documentElement;
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -68,6 +72,7 @@ let hidden = false;
 let appear = 1;
 /** phones: the interface sheet is folded down to its handle */
 let folded = false;
+let tint: Tint = TINTS[0];
 
 /** On phones the interface sits in a sheet with a handle that folds it away. */
 const handle = document.createElement('button');
@@ -86,7 +91,9 @@ function hexToRgb(value: string): RGB {
 function readTheme() {
   const css = getComputedStyle(root);
   const color = (name: string) => hexToRgb(css.getPropertyValue(name));
-  renderer.setTheme(color('--bg'), color('--ink'), color('--bg-core'));
+  const ramp = isDark() ? tint.dark : tint.light;
+  renderer.setTheme(color('--bg'), color('--ink'), color('--bg-core'), ramp ? [hexToRgb(ramp[0]), hexToRgb(ramp[1])] : undefined);
+  paintSwatches();
   paintBackground();
 }
 
@@ -438,6 +445,7 @@ window.addEventListener('keydown', (e) => {
   if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement) return;
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === 'h' || e.key === 'H') return setHidden(!hidden);
+  if (e.key === 'c' || e.key === 'C') return setTint(cycle(TINTS, tint, e.shiftKey ? -1 : 1));
   if (e.key === 'Escape' && hidden) return setHidden(false);
   if (e.key === 'ArrowLeft' || e.key === '[') return stepScene(-1);
   if (e.key === 'ArrowRight' || e.key === ']') return stepScene(1);
@@ -465,6 +473,67 @@ prefersDark.addEventListener('change', () => {
   readTheme();
 });
 
+/* ink colour */
+
+const swatch = (el: HTMLElement, t: Tint) => {
+  const ramp = isDark() ? t.dark : t.light;
+  el.style.setProperty('--lo', ramp ? ramp[0] : null);
+  el.style.setProperty('--hi', ramp ? ramp[1] : null);
+};
+const tintOptions = TINTS.map((t) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.setAttribute('role', 'radio');
+  b.setAttribute('aria-label', t.label);
+  b.title = t.label;
+  b.innerHTML = '<span class="swatch" aria-hidden="true"></span>';
+  b.addEventListener('click', () => {
+    setTint(t);
+    openTints(false);
+    tintButton.focus();
+  });
+  tintPop.append(b);
+  return b;
+});
+function paintSwatches() {
+  swatch(tintButton.querySelector('.swatch')!, tint);
+  TINTS.forEach((t, i) => swatch(tintOptions[i].querySelector('.swatch')!, t));
+}
+function setTint(next: Tint) {
+  tint = next;
+  tintName.textContent = next.label;
+  TINTS.forEach((t, i) => {
+    tintOptions[i].setAttribute('aria-checked', String(t === next));
+    tintOptions[i].tabIndex = t === next ? 0 : -1;
+  });
+  store.set('proc:tint', next.id);
+  readTheme();
+}
+function openTints(open: boolean) {
+  tintPop.hidden = !open;
+  tintButton.setAttribute('aria-expanded', String(open));
+  if (open) tintOptions[TINTS.indexOf(tint)].focus();
+}
+tintButton.addEventListener('click', () => openTints(tintPop.hidden));
+tintPop.addEventListener('keydown', (e) => {
+  // arrows move through the swatches like any radio group
+  const by = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+  if (by) {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = cycle(TINTS, tint, by);
+    setTint(next);
+    tintOptions[TINTS.indexOf(next)].focus();
+  } else if (e.key === 'Escape') {
+    e.stopPropagation();
+    openTints(false);
+    tintButton.focus();
+  }
+});
+document.addEventListener('pointerdown', (e) => {
+  if (!tintPop.hidden && !(e.target instanceof Node && tintButton.parentElement!.contains(e.target))) openTints(false);
+});
+
 const host: Host = {
   scenes: SCENES,
   widgets: WIDGETS,
@@ -477,6 +546,12 @@ const host: Host = {
   mode: () => renderer.mode,
   setMode,
   toggleTheme,
+  tints: TINTS,
+  tint: () => tint.id,
+  setTint(id) {
+    const t = TINTS.find((t) => t.id === id);
+    if (t) setTint(t);
+  },
   setWidget(id) {
     const w = findWidget(id);
     if (w) setWidget(w, true);
@@ -494,6 +569,7 @@ const host: Host = {
 const savedTheme = store.get('proc:theme');
 if (savedTheme === 'light' || savedTheme === 'dark') root.dataset.theme = savedTheme;
 syncThemeButton();
+setTint(TINTS.find((t) => t.id === store.get('proc:tint')) ?? TINTS[0]);
 
 const savedMode = store.get('proc:mode');
 setMode(isMode(savedMode) ? savedMode : 'tiles');

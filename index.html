@@ -47,6 +47,13 @@
         <button type="button" data-mode="ascii" aria-pressed="false" title="ASCII (2)">ascii</button>
         <button type="button" data-mode="halftone" aria-pressed="false" title="Halftone (3)">halftone</button>
       </div>
+      <div class="tint">
+        <button type="button" class="icon-btn framed" id="tint" aria-haspopup="true" aria-expanded="false" aria-controls="tint-pop" title="Ink colour (C)">
+          <span class="swatch" aria-hidden="true"></span>
+          <span class="sr-only">Ink colour: <span id="tint-name">graphite</span></span>
+        </button>
+        <div class="tint-pop" id="tint-pop" role="radiogroup" aria-label="Ink colour" hidden></div>
+      </div>
       <button type="button" class="icon-btn framed" id="theme" aria-label="Dark mode" aria-pressed="false">
         <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="M8 2.5a5.5 5.5 0 0 1 0 11z" fill="currentColor" /></svg>
       </button>

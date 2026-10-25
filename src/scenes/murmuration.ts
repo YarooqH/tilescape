@@ -3,6 +3,7 @@ import { clamp, noise, rand, range } from '../math';
 import { burst } from '../particles';
 import { paintGrid } from '../render';
 import type { Scene } from '../scene';
+import { drawText, fitText } from '../type';
 import { inRect, type World } from '../world';
 
 const R = 26; // neighbour radius and hash cell size
@@ -62,47 +63,14 @@ export function murmuration(world: World): Scene {
     c.height = Math.ceil(world.h);
     const g = c.getContext('2d');
     if (!g) return;
-    const words = (text.trim() || 'hello').split(/\s+/);
-    while (words.length > 1 && words.join(' ').length > 48) words.pop();
-    if (words[0].length > 48) words[0] = words[0].slice(0, 48);
-    const font = (s: number) => `700 ${s}px Geist, system-ui, sans-serif`;
-    g.font = font(100);
-    const widthOf = (from: number, to: number) => g.measureText(words.slice(from, to).join(' ')).width;
-
-    // try one to three lines and keep whichever lets the letters be biggest
-    let lines = [words.join(' ')];
-    let size = 0;
-    for (let L = 1; L <= Math.min(3, words.length); L++) {
-      let best: number[] = [];
-      let bestW = Infinity;
-      const nw = words.length;
-      for (let a = 1; a <= (L > 1 ? nw - L + 1 : 1); a++) {
-        for (let b = L > 2 ? a + 1 : nw; b <= (L > 2 ? nw - 1 : nw); b++) {
-          const cuts = L === 1 ? [0, nw] : L === 2 ? [0, a, nw] : [0, a, b, nw];
-          let w = 0;
-          for (let k = 0; k < L; k++) w = Math.max(w, widthOf(cuts[k], cuts[k + 1]));
-          if (w < bestW) {
-            bestW = w;
-            best = cuts;
-          }
-        }
-      }
-      const s = Math.min(140, (view.w * 0.86 * 100) / bestW, (view.h * 0.62) / (L * 1.15));
-      // an extra line has to earn its place, or short phrases break up for nothing
-      if (s > size * 1.15) {
-        size = s;
-        lines = best.slice(0, -1).map((from, k) => words.slice(from, best[k + 1]).join(' '));
-      }
-    }
+    const fit = fitText(g, text, view.w * 0.86, view.h * 0.62, 140);
+    const lines = fit.lines;
+    let size = fit.size;
 
     // there are only so many birds: shrink the type until they can cover every stroke
     const ink = () => {
       g.clearRect(0, 0, c.width, c.height);
-      g.font = font(size);
-      g.textAlign = 'center';
-      g.textBaseline = 'middle';
-      g.fillStyle = '#000';
-      lines.forEach((line, k) => g.fillText(line, view.cx, view.cy + (k - (lines.length - 1) / 2) * size * 1.15));
+      drawText(g, lines, size, view.cx, view.cy);
       return g.getImageData(0, 0, c.width, c.height).data;
     };
     let data = ink();

@@ -1077,7 +1077,59 @@ select {
   backdrop-filter: blur(8px);
 }
 
+/* ink colour: a swatch button and a row of swatches above it */
+.tint {
+  position: relative;
+  transition:
+    opacity 0.3s ease,
+    visibility 0s;
+}
+.swatch {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--lo, var(--muted)), var(--hi, var(--ink)));
+  box-shadow: inset 0 0 0 1px var(--card-border);
+}
+.tint-pop {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  background: var(--panel);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(-50%);
+}
+.tint-pop[hidden] {
+  display: none;
+}
+.tint-pop button {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+.tint-pop button:hover {
+  background: var(--hover);
+}
+.tint-pop button[aria-checked='true'] .swatch {
+  box-shadow:
+    0 0 0 2px var(--panel),
+    0 0 0 3.5px var(--ink);
+}
+
 .icon-btn:focus-visible,
+.tint-pop button:focus-visible,
 .step:focus-visible,
 .picker select:focus-visible,
 .seg button:focus-visible {
