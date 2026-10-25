@@ -135,7 +135,7 @@ export function terminal(host: Host): Widget {
   });
 
   prompt(host.scene());
-  print('procedural scenes, tty1');
+  print('tilescape, tty1');
   print("type 'help' for commands, or just say something", 'dim');
 
   return {
