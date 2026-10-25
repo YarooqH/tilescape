@@ -4,7 +4,7 @@ Generative scenes drawn live on a canvas, rendered as tiles, ASCII or halftone. 
 
 **[Live demo](https://yarooqh.github.io/tilescape/)**
 
-[![Koi pond rendered as tiles](docs/preview.png)](https://yarooqh.github.io/tilescape/)
+[![Topographic map rendered as tiles](docs/preview.png)](https://yarooqh.github.io/tilescape/)
 
 ## Scenes
 
