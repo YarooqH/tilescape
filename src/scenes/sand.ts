@@ -9,6 +9,19 @@ import { inRect, type World } from '../world';
 const STEP = 1 / 50;
 /** steps a grain still counts as falling after it last moved */
 const SETTLE = 6;
+/** for grains dropping into a word, in cells per second */
+const GRAVITY = 140;
+const TERMINAL = 70;
+
+/** a grain on its way down to its place in a word; it skips the pile until it lands */
+interface Drop {
+  x: number;
+  y: number;
+  v: number;
+  to: number;
+  wait: number;
+  tone: number;
+}
 
 /** Falling sand, one grain per cell: it pours from the top, heaps on the interface and slides off its edges. */
 export function fallingSand(world: World): Scene {
@@ -22,6 +35,7 @@ export function fallingSand(world: World): Scene {
   /** grains frozen into the shape of a sent word */
   let held = new Uint8Array(0);
   let hold = 0;
+  const drops: Drop[] = [];
   let count = 0;
   let open = 1;
   let acc = 0;
@@ -75,6 +89,25 @@ export function fallingSand(world: World): Scene {
 
   function step() {
     flip ^= 1;
+    for (let k = drops.length - 1; k >= 0; k--) {
+      const d = drops[k];
+      if (d.wait > 0) {
+        d.wait -= STEP;
+        continue;
+      }
+      d.v = Math.min(TERMINAL, d.v + GRAVITY * STEP);
+      d.y += d.v * STEP;
+      if (d.y < d.to) continue;
+      const i = d.to * cols + d.x;
+      drops.splice(k, 1);
+      if (wall[i]) continue;
+      if (grain[i] === 0) {
+        grain[i] = d.tone;
+        count++;
+      }
+      held[i] = 1;
+      moving[i] = 0;
+    }
     for (let y = rows - 2; y >= 0; y--) {
       for (let k = 0; k < cols; k++) {
         const x = flip ? k : cols - 1 - k;
@@ -165,6 +198,7 @@ export function fallingSand(world: World): Scene {
         moving = new Uint8Array(cols * rows);
         held = new Uint8Array(cols * rows);
         count = 0;
+        drops.length = 0;
         buildWall(world);
         dunes();
       } else buildWall(world);
@@ -172,7 +206,8 @@ export function fallingSand(world: World): Scene {
     update(dt) {
       if (dt === 0) return;
       time += dt;
-      if (hold > 0) {
+      // the word only starts to wear once every grain has landed
+      if (hold > 0 && drops.length === 0) {
         hold -= dt;
         if (hold <= 0) held.fill(0);
       }
@@ -202,6 +237,13 @@ export function fallingSand(world: World): Scene {
           }
         }
       }
+      for (const d of drops) {
+        if (d.wait > 0 || d.y < 0) continue;
+        const i = Math.floor(d.y) * cols + d.x;
+        blend(grid, i, 0.8, 0.55 + (d.tone / 255) * 0.2);
+        // a short streak behind the fast ones
+        if (d.v > 30 && d.y >= 1) blend(grid, i - cols, 0.35, 0.35);
+      }
     },
     background: paintGrid,
     pointerDown(px, py) {
@@ -219,14 +261,22 @@ export function fallingSand(world: World): Scene {
       // the word forms high in the open space so it has room to fall
       const mask = textMask(text, cols, rows, view.cx / cell, (view.cy - view.h * 0.18) / cell, (view.w * 0.86) / cell, (view.h * 0.4) / cell, 18);
       if (!mask) return;
+      // a word already standing lets go, and the new one rains down into place, bottom rows first
+      held.fill(0);
+      drops.length = 0;
+      let top = rows;
+      let bottom = 0;
       for (let i = 0; i < mask.length; i++) {
         if (mask[i] < 0.45 || wall[i]) continue;
-        if (grain[i] === 0) {
-          grain[i] = tone();
-          count++;
-        }
-        held[i] = 1;
-        moving[i] = 0;
+        const y = (i / cols) | 0;
+        top = Math.min(top, y);
+        bottom = Math.max(bottom, y);
+      }
+      const span = Math.max(1, bottom - top);
+      for (let i = 0; i < mask.length; i++) {
+        if (mask[i] < 0.45 || wall[i]) continue;
+        const y = (i / cols) | 0;
+        drops.push({ x: i % cols, y: -range(1, 6), v: range(0, 10), to: y, wait: ((bottom - y) / span) * 0.9 + rand() * 0.35, tone: tone() });
       }
       hold = 4.5;
     },

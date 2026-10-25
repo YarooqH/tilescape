@@ -20,14 +20,14 @@ const PERSONAS: Record<string, Persona> = {
   'falling-sand': {
     name: 'the sand',
     status: 'always running out',
-    hello: 'Every key drops a few grains. Send a word and it will hold its shape, briefly.',
-    replies: ['It held your words for a moment, then let them fall.', 'Sand remembers nothing. That was nice while it lasted.', 'The letters slumped into a dune.'],
+    hello: 'Every key drops a few grains. Send a word and the sand will fall into it.',
+    replies: ['It rained down into your words, held a moment, then let go.', 'Sand remembers nothing. That was nice while it lasted.', 'The letters slumped into a dune.'],
   },
   topographic: {
     name: 'the survey',
     status: 'mapping the ground',
-    hello: 'Say something and the ground will rise to meet it.',
-    replies: ['Your words are a ridge now. Look at the lines bunch up.', 'The land lifted into letters, then wore back down.', 'New high ground, marked and measured.'],
+    hello: 'Say something and it goes on the map.',
+    replies: ['Surveyed and labelled. The lines made room for it.', 'Your words are on the map, until the next edition.', 'Charted. The contours will close over it soon.'],
   },
   dragon: {
     name: 'the dragon',

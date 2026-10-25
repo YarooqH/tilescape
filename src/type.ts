@@ -4,11 +4,12 @@ export const boldFont = (size: number) => `700 ${size}px Geist, system-ui, sans-
  * Break a message into one to three lines and size it to fit a `w` × `h` box, keeping
  * whichever layout lets the letters be biggest. Long messages lose whole words past `limit`.
  */
-export function fitText(g: CanvasRenderingContext2D, text: string, w: number, h: number, max: number, limit = 48) {
+export function fitText(g: CanvasRenderingContext2D, text: string, w: number, h: number, max: number, limit = 48, spacing = 0) {
   const words = (text.trim() || 'hello').split(/\s+/);
   while (words.length > 1 && words.join(' ').length > limit) words.pop();
   if (words[0].length > limit) words[0] = words[0].slice(0, limit);
   g.font = boldFont(100);
+  g.letterSpacing = `${spacing * 100}px`;
   const widthOf = (from: number, to: number) => g.measureText(words.slice(from, to).join(' ')).width;
 
   let lines = [words.join(' ')];
@@ -38,9 +39,12 @@ export function fitText(g: CanvasRenderingContext2D, text: string, w: number, h:
   return { lines, size };
 }
 
-/** Draw lines from `fitText` centred on (cx, cy). */
-export function drawText(g: CanvasRenderingContext2D, lines: string[], size: number, cx: number, cy: number) {
+/** Draw lines from `fitText` centred on (cx, cy); `spacing` is extra space between letters, in ems. */
+export function drawText(g: CanvasRenderingContext2D, lines: string[], size: number, cx: number, cy: number, spacing = 0) {
   g.font = boldFont(size);
+  g.letterSpacing = `${spacing * size}px`;
+  // letter spacing also trails the last letter, which would pull centred text left
+  cx += (spacing * size) / 2;
   g.textAlign = 'center';
   g.textBaseline = 'middle';
   g.fillStyle = '#000';
@@ -48,15 +52,15 @@ export function drawText(g: CanvasRenderingContext2D, lines: string[], size: num
 }
 
 /** Rasterise a message at one pixel per grid cell; returns coverage 0..1 per cell, or null without a canvas. */
-export function textMask(text: string, cols: number, rows: number, cx: number, cy: number, w: number, h: number, max: number) {
+export function textMask(text: string, cols: number, rows: number, cx: number, cy: number, w: number, h: number, max: number, spacing = 0) {
   if (typeof document === 'undefined' || cols === 0 || rows === 0) return null;
   const c = document.createElement('canvas');
   c.width = cols;
   c.height = rows;
   const g = c.getContext('2d', { willReadFrequently: true });
   if (!g) return null;
-  const { lines, size } = fitText(g, text, w, h, max);
-  drawText(g, lines, size, cx, cy);
+  const { lines, size } = fitText(g, text, w, h, max, 48, spacing);
+  drawText(g, lines, size, cx, cy, spacing);
   const data = g.getImageData(0, 0, cols, rows).data;
   const mask = new Float32Array(cols * rows);
   for (let i = 0; i < mask.length; i++) mask[i] = data[i * 4 + 3] / 255;

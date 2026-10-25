@@ -25,10 +25,11 @@ export function topographic(world: World): Scene {
   let cols = 0;
   let rows = 0;
   let height = new Float32Array(0);
+  /** a sent message, printed on the map as a place label */
   let word: Float32Array | null = null;
+  /** how far each cell is from the label's letters, 1 on them falling to 0 a few cells out */
+  let halo: Float32Array | null = null;
   let wordAge = 0;
-  /** how far the word has risen right now */
-  let wordK = 0;
   const hills: Hill[] = [];
   /** the hill under a held pointer keeps rising */
   let raising: Hill | null = null;
@@ -40,7 +41,6 @@ export function topographic(world: World): Scene {
   function terrain(world: World) {
     const { cell: C, card } = world;
     const drift = time * 0.012;
-    wordK = word ? 0.32 * envelope(wordAge, 1.6, 5, 2.4) : 0;
     for (let gy = 0; gy < rows; gy++) {
       for (let gx = 0; gx < cols; gx++) {
         const i = gy * cols + gx;
@@ -57,7 +57,6 @@ export function topographic(world: World): Scene {
           const d2 = ((x - k.x) ** 2 + (y - k.y) ** 2) / (k.r * k.r);
           if (d2 < 9) h += k.amp * envelope(k.age, 0.8, k.life - 4.8, 4) * Math.exp(-d2);
         }
-        if (wordK > 0 && word) h += wordK * word[i];
         height[i] = h;
       }
     }
@@ -70,7 +69,7 @@ export function topographic(world: World): Scene {
     return h;
   }
 
-  /** a cheap 2-pass box blur, so a word rises with sloped sides and gets nested rings */
+  /** a cheap 2-pass box blur, to grow the label's halo out from its letters */
   function soften(m: Float32Array, r: number) {
     const tmp = new Float32Array(m.length);
     for (let y = 0; y < rows; y++) {
@@ -111,12 +110,12 @@ export function topographic(world: World): Scene {
       cols = c;
       rows = r;
       height = new Float32Array(cols * rows);
-      word = null;
+      word = halo = null;
     },
     update(dt, world) {
       time += dt;
       wordAge += dt;
-      if (word && wordAge > 10) word = null;
+      if (word && wordAge > 9) word = halo = null;
       for (let i = hills.length - 1; i >= 0; i--) {
         const h = hills[i];
         h.age += dt;
@@ -130,11 +129,22 @@ export function topographic(world: World): Scene {
     raster(grid) {
       if (grid.cols !== cols || grid.rows !== rows) return;
       const H = height;
-      const raised = wordK > 0 ? word : null;
+      // contour lines part around the label, the way a printed map knocks them out behind type
+      const part = word ? envelope(wordAge, 0.9, 5.4, 1.4) : 0;
+      const ink = word ? envelope(wordAge - 0.5, 0.9, 4.6, 1.2) : 0;
+      const gap = 0.32 - 0.3 * part;
       for (let gy = 1; gy < rows - 1; gy++) {
         for (let gx = 1; gx < cols - 1; gx++) {
           const i = gy * cols + gx;
           const h = H[i];
+          if (word && halo && part > 0) {
+            // letters print in as scattered specks that fill out
+            if (word[i] > 0.5 && hash(gx, gy + 7) < ink) {
+              blend(grid, i, 1, 0.9);
+              continue;
+            }
+            if (halo[i] > gap) continue;
+          }
           if (h < SEA) {
             // open water: sparse diagonal hatching that thickens with depth
             const deep = clamp((SEA - h) / 0.12, 0, 1);
@@ -144,8 +154,6 @@ export function topographic(world: World): Scene {
             if (ds > 1e-4 && (SEA - h) / ds < 0.9) blend(grid, i, 1, 0.75);
             continue;
           }
-          // the raised word is shaded like a plateau on a printed map, so it reads between the rings
-          if (raised && raised[i] * wordK > 0.14 && (gx + gy) % 2 === 0) blend(grid, i, 0.6, 0.4);
           const v = h * LEVELS;
           const g = Math.hypot(H[i + 1] - H[i - 1], H[i + cols] - H[i - cols]) * 0.5 * LEVELS;
           if (g < 1e-4) continue;
@@ -175,9 +183,11 @@ export function topographic(world: World): Scene {
     },
     submit(text, world) {
       const { view, cell: C } = world;
-      const mask = textMask(text, cols, rows, view.cx / C, view.cy / C, (view.w * 0.82) / C, (view.h * 0.5) / C, 22);
+      // spaced capitals, like the name of a range on a survey sheet
+      const mask = textMask(text.toUpperCase(), cols, rows, view.cx / C, view.cy / C, (view.w * 0.82) / C, (view.h * 0.5) / C, 20, 0.18);
       if (!mask) return;
-      word = soften(mask, 1);
+      word = mask;
+      halo = soften(soften(mask.slice(), 2), 1);
       wordAge = 0;
     },
   };
