@@ -985,6 +985,8 @@ select {
   align-items: center;
   gap: 8px;
   pointer-events: none;
+  /* above the stage, so the colour popover can open over a card */
+  z-index: 2;
 }
 .controls > * {
   pointer-events: auto;
@@ -1104,7 +1106,8 @@ select {
   background: var(--panel);
   backdrop-filter: blur(8px);
   box-shadow: var(--shadow-lg);
-  transform: translateX(-50%);
+  /* --nudge keeps it on screen when the button sits near an edge */
+  transform: translateX(calc(-50% + var(--nudge, 0px)));
 }
 .tint-pop[hidden] {
   display: none;
