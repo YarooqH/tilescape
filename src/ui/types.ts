@@ -11,6 +11,9 @@ export interface Host {
   mode(): Mode;
   setMode(mode: Mode): void;
   toggleTheme(): void;
+  readonly tints: readonly { id: string; label: string }[];
+  tint(): string;
+  setTint(id: string): void;
   setWidget(id: string): void;
   isPaused(): boolean;
   setPaused(paused: boolean): void;

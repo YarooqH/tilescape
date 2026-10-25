@@ -74,6 +74,14 @@ export function palette(host: Host): Widget {
         run: () => host.setMode(m),
       })),
       { group: 'Render as', label: 'flip light / dark', terms: 'theme dark light', run: () => host.toggleTheme() },
+      ...host.tints.map((t) => ({
+        group: 'Ink colour',
+        label: t.label,
+        terms: 'color colour tint ink',
+        meta: t.id === host.tint() ? 'on' : undefined,
+        current: t.id === host.tint(),
+        run: () => host.setTint(t.id),
+      })),
       ...host.widgets
         .filter((w) => w.id !== 'palette')
         .map((w) => ({ group: 'Swap interface', label: w.label, terms: 'ui interface', run: () => host.setWidget(w.id) })),
